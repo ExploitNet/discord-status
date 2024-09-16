@@ -1,5 +1,12 @@
 const { Client, GatewayIntentBits } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessages] });
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildMessages
+    ]
+});
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
@@ -28,7 +35,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 
 async function updatePresence() {
     try {
-        const channel = client.channels.cache.get(CHANNEL_ID);
+        const channel = await client.channels.fetch(CHANNEL_ID);
         if (!channel) return console.error('Channel not found!');
 
         const onlineMembers = channel.members.filter(member => member.presence?.status === 'online').size;
@@ -51,9 +58,9 @@ async function getChannelCount() {
     try {
         let count = 0;
         for (const categoryId of CATEGORY_IDS) {
-            const category = client.channels.cache.get(categoryId);
-            if (category && category.type === 'GUILD_CATEGORY') {
-                const channels = category.children.filter(c => c.type === 'GUILD_TEXT' || c.type === 'GUILD_VOICE');
+            const category = await client.channels.fetch(categoryId);
+            if (category && category.type === 4) {
+                const channels = category.children.filter(c => c.type === 0 || c.type === 2); // 0: GUILD_TEXT, 2: GUILD_VOICE
                 count += channels.size;
             }
         }
