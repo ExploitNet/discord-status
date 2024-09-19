@@ -1,87 +1,111 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, TextChannel } = require('discord.js');
+require('dotenv').config();
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,   // اضافه کردن این intent برای دسترسی به اعضای سرور
-        GatewayIntentBits.GuildPresences, // این intent برای دسترسی به وضعیت آنلاین اعضا
-        GatewayIntentBits.GuildMessages
-    ]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+  ],
+  intents: Object.keys(GatewayIntentBits).map((a) => {
+    return GatewayIntentBits[a];
+  }),
+});
+const app = express();
+const port = 3000;
+app.get('/', (req, res) => {
+  res.send('Devil Bot Status Changed');
+});
+app.listen(port, () => {
+  console.log(` Listening to Devil: http://localhost:${port}`);
+  console.log(` Developed By DevMrZeRo#0000`);
 });
 
-const TOKEN = process.env.DISCORD_TOKEN; // استفاده از متغیر محیطی
-const CHANNEL_ID = process.env.CHANNEL_ID; // استفاده از متغیر محیطی
-const CATEGORY_IDS = process.env.CATEGORY_IDS.split(','); // لیست ID های دسته‌بندی‌های مورد نظر
+const serverInfo = {};
 
-const statusMessages = [
-    "Listening to 👥 ${totalMembers} Members",
-    "Listening to 🟢 ${onlineMembers} online members",
-    "Playing SunSet RP",
-    "Watching 📩 ${channelCount} Channels"
-];
+async function getServerInfo(guild) {
+  const totalMembers = guild.memberCount;
+  console.log(`Total members: ${totalMembers}`);
 
-let currentStatusIndex = 0;
+  const members = await guild.members.fetch();
+  const onlineMembers = members.filter(member => member.presence && member.presence.status === 'online').size;
+  console.log(`Online members: ${onlineMembers}`);
+
+  const categoryIds = ['1215219758228709426', '1215219807134162944', '1215219724900634694', '1215219675970142228'];
+  let totalChannels = 0;
+  for (const categoryId of categoryIds) {
+    const category = guild.channels.cache.get(categoryId);
+    if (category) {
+      totalChannels += category.children.cache.size;
+    }
+  }
+  console.log(`Total channels: ${totalChannels}`);
+
+  serverInfo.totalMembers = totalMembers;
+  serverInfo.onlineMembers = onlineMembers;
+  serverInfo.totalChannels = totalChannels;
+}
+
+let currentIndex = 0;
+const channelId = '';
+
+async function login() {
+  try {
+    await client.login(process.env.TOKEN);
+    console.log(`|    Logged in as ${client.user.tag}`);
+  } catch (error) {
+    console.error('Failed to log in:', error);
+    process.exit(1);
+  }
+}
+
+function updateStatusAndSendMessages() {
+  const statusMessages = [
+    `Listening to 👥 ${serverInfo.totalMembers} Members`,
+    `Listening to 🟢 ${serverInfo.onlineMembers} Online Members`,
+    `Watching 📩 ${serverInfo.totalChannels} Open Tickets`,
+  ];
+
+  const currentStatus = statusMessages[currentIndex];
+  const nextStatus = statusMessages[(currentIndex + 1) % statusMessages.length];
+
+  client.user.setPresence({
+    activities: [{ name: currentStatus, type: ActivityType.Custom}],
+    status: 'dnd',
+  });
+
+  const textChannel = client.channels.cache.get(channelId);
+
+  if (textChannel instanceof TextChannel) {
+    textChannel.send(`Bot status is: ${currentStatus}`);
+  } else {
+
+  }
+
+  currentIndex = (currentIndex + 1) % statusMessages.length;
+}
 
 client.once('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    
-    // استفاده از تاخیر ۵ ثانیه‌ای برای اطمینان از دریافت صحیح کانال‌ها
-    setTimeout(() => {
-        setInterval(updatePresence, 1000); // به‌روزرسانی هر یک ثانیه
-        setInterval(toggleStatusMessage, 5000); // تغییر وضعیت هر ۵ ثانیه
-    }, 5000);
+  console.log(`|    Bot is ready as ${client.user.tag}`);
+
+  const guild = client.guilds.cache.get('1214943889778020392');
+  if (!guild) {
+    console.error(`Guild not found: 1214943889778020392`);
+    return;
+  }
+
+  async function updateServerInfo() {
+    await getServerInfo(guild);
+  }
+
+  updateServerInfo();
+  updateStatusAndSendMessages();
+
+  setInterval(() => {
+    updateServerInfo();
+    updateStatusAndSendMessages();
+  }, 10000);
 });
 
-client.on('presenceUpdate', (oldPresence, newPresence) => {
-    if (newPresence.guild.id === 'YOUR_GUILD_ID') {
-        updatePresence();
-    }
-});
-
-async function updatePresence() {
-    try {
-        console.log(`Trying to fetch channel with ID: ${CHANNEL_ID}`); // چاپ کردن CHANNEL_ID
-        const channel = await client.channels.fetch(CHANNEL_ID);
-        
-        // بررسی اینکه آیا کانال پیدا شده است یا خیر
-        if (!channel) return console.error('Channel not found!');
-        console.log(`Successfully fetched channel: ${channel.name}`); // چاپ نام کانال در صورت موفقیت
-
-        const onlineMembers = channel.members.filter(member => member.presence?.status === 'online').size;
-        const totalMembers = channel.guild.memberCount;
-        const channelCount = await getChannelCount();
-
-        // جایگزین کردن مقادیر دینامیک در پیام وضعیت فعلی
-        let activityText = statusMessages[currentStatusIndex]
-            .replace('${onlineMembers}', onlineMembers)
-            .replace('${totalMembers}', totalMembers)
-            .replace('${channelCount}', channelCount);
-
-        client.user.setActivity(activityText, { type: 'LISTENING' });
-    } catch (error) {
-        console.error('Error updating presence:', error);
-    }
-}
-
-async function getChannelCount() {
-    try {
-        let count = 0;
-        for (const categoryId of CATEGORY_IDS) {
-            const category = await client.channels.fetch(categoryId); // fetch برای دسته‌بندی‌ها
-            if (category && category.type === 4) { // 4: GUILD_CATEGORY
-                const channels = category.children.filter(c => c.type === 0 || c.type === 2); // 0: GUILD_TEXT, 2: GUILD_VOICE
-                count += channels.size;
-            }
-        }
-        return count;
-    } catch (error) {
-        console.error('Error fetching channel count:', error);
-        return 'Error';
-    }
-}
-
-function toggleStatusMessage() {
-    currentStatusIndex = (currentStatusIndex + 1) % statusMessages.length;
-    updatePresence(); // به‌روزرسانی وضعیت
-}
-
-client.login(TOKEN);
+login();
