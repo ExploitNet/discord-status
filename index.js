@@ -1,16 +1,13 @@
 const { Client, GatewayIntentBits, ActivityType, TextChannel } = require('discord.js');
 require('dotenv').config();
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+
+// Initialise the Discord client with all available gateway intents.
+// The previous implementation included two `intents` keys which meant the
+// first one was ignored. Using `Object.values` ensures we pass a single array
+// containing every intent flag.
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-  ],
-  intents: Object.keys(GatewayIntentBits).map((a) => {
-    return GatewayIntentBits[a];
-  }),
+  intents: Object.values(GatewayIntentBits),
 });
 const app = express();
 const port = 3000;
