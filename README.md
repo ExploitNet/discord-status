@@ -1,77 +1,54 @@
-# ربات وضعیت دیسکورد
+# Discord Status Bot
 
+This project is a Discord bot that automatically updates its status message in a Discord server based on server statistics, such as total members, online members, and open ticket channels. The bot also provides an Express web endpoint for a simple status response.
 
-این پروژه شامل یک ربات دیسکورد است که با استفاده از کتابخانهٔ `discord.js` نوشته شده و وضعیت سرور را هر ده ثانیه بروزرسانی می‌کند. ربات همچنین یک سرور کوچک Express روی پورت ۳۰۰۰ اجرا می‌کند که در مسیر اصلی (`/`) پیام ساده‌ای را نمایش می‌دهد.
+## Features
+- Updates status message periodically with live server data
+- Can post updates to a specified text channel (customize in code)
+- Simple web server endpoint for bot status
 
-## پیش‌نیازها
+## Requirements
+- Node.js (v16 or newer recommended)
+- A Discord bot token ([see Discord Developer Portal](https://discord.com/developers/applications))
 
-- نصب [Node.js](https://nodejs.org) نسخهٔ ۱۶ یا بالاتر
-- توکن ربات دیسکورد
+## Installation
 
-## نصب
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ExploitNet/discord-status.git
+   cd discord-status
+   ```
 
-ابتدا وابستگی‌های پروژه را نصب کنید:
-=======
-این مخزن شامل کد یک ربات دیسکورد است که می‌تواند وضعیت سرور را به‌صورت دوره‌ای به‌روزرسانی کند و با استفاده از کتابخانهٔ [discord.js](https://discord.js.org/) توسعه داده شده است.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## پیش‌نیازها
+3. **Create a `.env` file**
+   In the project root, create a `.env` file with your Discord bot token:
+   ```env
+   TOKEN=your_discord_bot_token_here
+   ```
 
-- [Node.js](https://nodejs.org) نسخهٔ 16 یا بالاتر
-- دسترسی به توکن ربات دیسکورد
+4. **(Optional) Edit Bot Configuration**
+   - To update the guild/server ID, text channel ID, or watched categories, edit the related IDs in `index.js`.
 
-## نصب
+5. **Run the Bot**
+   ```bash
+   npm start
+   ```
+   The bot will output logs in your terminal.
 
-ابتدا وابستگی‌ها را نصب کنید
+6. **Access the Web Endpoint**
+   The server also exposes a basic endpoint at [http://localhost:3000/](http://localhost:3000/).
 
-```bash
-npm install
-```
+## Customization
+- **Change Status Messages:**  Edit the `statusMessages` array in `index.js`.
+- **Target Discord Server/Guild:**  Update the guild and category IDs in `index.js` to match your server's IDs.
+- **Send Message to Channel:**  Set a valid channel ID in the `channelId` variable to enable message posting.
 
+## License
+This project is licensed under the MIT License.
 
-سپس فایلی به نام `.env` بسازید و متغیر زیر را در آن قرار دهید:
-
-```env
-TOKEN=توکن_ربات_شما
-```
-
-## پیکربندی
-
-در فایل `index.js` می‌توانید شناسهٔ سرور (Guild ID) و همچنین `channelId` را برای ارسال پیام‌های وضعیت تغییر دهید. شناسه‌های دسته‌ها (categoryIds) نیز در این فایل تعریف شده‌اند تا تعداد تیکت‌های باز را محاسبه کنند.
-
-## اجرا
-
-برای اجرای ربات کافی است دستور زیر را اجرا کنید:
-=======
-سپس فایلی به نام `.env` در ریشهٔ پروژه ایجاد کرده و مقدار توکن ربات را در آن قرار دهید:
-
-```env
-TOKEN=توکن‌ربات
-```
-
-## اجرا
-
-برای اجرای ربات از دستور زیر استفاده کنید:
-
-
-```bash
-npm start
-```
-
-
-پس از ورود ربات، اطلاعات سرور (تعداد کل اعضا، اعضای آنلاین و تعداد تیکت‌های باز) دریافت می‌شود و هر ده ثانیه یکی از پیام‌های زیر به‌عنوان وضعیت ربات تنظیم خواهد شد:
-
-- تعداد کل اعضا
-- تعداد اعضای آنلاین
-- تعداد تیکت‌های باز
-
-در صورت تنظیم `channelId`، همین پیام‌ها در کانال موردنظر نیز ارسال می‌شوند.
-
-## مشارکت
-
-در صورت تمایل به مشارکت در توسعهٔ این ربات، درخواست کشش (Pull Request) خود را ارسال کنید.
-=======
-پس از اجرا، ربات با حساب کاربری مشخص شده در توکن وارد شده و هر ده ثانیه وضعیت جدیدی را تنظیم می‌کند.
-
-## مشارکت
-
-در صورت تمایل به بهبود این پروژه، درخواست کشش (PR) خود را ارسال کنید.
+## Credits
+Developed by [ImSoheil](https://t.me/ImSoheilOfficial)
